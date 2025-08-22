@@ -41,12 +41,24 @@ pub fn run() {
             command::pakeplus::update_config_file,
             command::pakeplus::update_cargo_file,
             command::pakeplus::update_main_rust,
-            command::pakeplus::rust_lib_window,
             command::pakeplus::update_custom_js,
             command::pakeplus::content_to_base64,
             command::pakeplus::update_config_json,
             command::pakeplus::rust_main_window,
         ])
+        .setup(|app| {
+            let app_handle = app.handle();
+            let _ = tauri::WebviewWindowBuilder::from_config(
+                app_handle,
+                &app.config().app.windows.get(0).unwrap().clone(),
+            )
+            .unwrap()
+            .initialization_script(include_str!("./extension/event.js"))
+            .initialization_script(include_str!("./extension/custom.js"))
+            .build()
+            .unwrap();
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
